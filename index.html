@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Note Articles</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
+      background: #f8f9fa;
+      color: #333;
+      line-height: 1.8;
+    }
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 { font-size: 1.4rem; }
+    nav { display: flex; gap: 1.2rem; }
+    nav a {
+      color: #e0e0e0;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+    }
+    nav a:hover, nav a.active { color: #64ffda; }
+    .container { max-width: 800px; margin: 2rem auto; padding: 0 1.5rem; }
+    .article-list { list-style: none; }
+    .article-list li {
+      background: #fff;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      transition: box-shadow 0.2s;
+    }
+    .article-list li:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+    .article-list a {
+      display: block;
+      padding: 1.2rem 1.5rem;
+      text-decoration: none;
+      color: #1a1a2e;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    .article-list a span {
+      display: block;
+      font-weight: 400;
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: 0.3rem;
+    }
+    #markdown-body {
+      background: #fff;
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    #markdown-body h1 { font-size: 1.8rem; margin-bottom: 1rem; border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }
+    #markdown-body h2 { font-size: 1.4rem; margin: 1.5rem 0 0.8rem; color: #1a1a2e; }
+    #markdown-body h3 { font-size: 1.2rem; margin: 1.2rem 0 0.6rem; }
+    #markdown-body p { margin-bottom: 1rem; }
+    #markdown-body ul, #markdown-body ol { margin: 0.5rem 0 1rem 1.5rem; }
+    #markdown-body code {
+      background: #f0f0f0;
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+    #markdown-body pre {
+      background: #1a1a2e;
+      color: #e0e0e0;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+    }
+    #markdown-body pre code { background: none; color: inherit; padding: 0; }
+    #markdown-body blockquote {
+      border-left: 4px solid #64ffda;
+      padding: 0.5rem 1rem;
+      margin: 1rem 0;
+      background: #f0faf7;
+      color: #555;
+    }
+    #markdown-body table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    #markdown-body th, #markdown-body td { border: 1px solid #ddd; padding: 0.6rem 0.8rem; text-align: left; }
+    #markdown-body th { background: #f0f0f0; font-weight: 600; }
+    #markdown-body img { max-width: 100%; border-radius: 6px; }
+    #markdown-body a { color: #0066cc; }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 1rem;
+      color: #0066cc;
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+    .back-link:hover { text-decoration: underline; }
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: #999;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Note Articles</h1>
+    <nav>
+      <a href="#" onclick="showHome()" class="active" id="nav-home">ホーム</a>
+      <a href="#about" onclick="loadArticle('about.md', this)" id="nav-about">このサイトについて</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div id="home-view">
+      <h2 style="margin-bottom:1rem; font-size:1.3rem;">記事一覧</h2>
+      <ul class="article-list" id="article-list"></ul>
+    </div>
+    <div id="article-view" style="display:none;">
+      <a href="#" class="back-link" onclick="showHome()">&larr; 記事一覧に戻る</a>
+      <div id="markdown-body"></div>
+    </div>
+  </div>
+
+  <footer>
+    &copy; 2026 Note Articles &mdash; Powered by GitHub Pages
+  </footer>
+
+  <script>
+    const articles = [
+      { file: 'articles/hello-world.md', title: 'はじめての記事', desc: 'このサイトの最初の記事です' },
+      { file: 'articles/markdown-guide.md', title: 'Markdownの書き方ガイド', desc: 'Markdownの基本的な記法をまとめました' },
+      { file: 'articles/github-pages.md', title: 'GitHub Pagesで公開する方法', desc: 'GitHub Pagesを使ったサイト公開の手順' }
+    ];
+
+    function renderArticleList() {
+      const list = document.getElementById('article-list');
+      list.innerHTML = articles.map(a =>
+        `<li><a href="#" onclick="loadArticle('${a.file}', null); return false;">${a.title}<span>${a.desc}</span></a></li>`
+      ).join('');
+    }
+
+    async function loadArticle(file, navEl) {
+      try {
+        const res = await fetch(file);
+        if (!res.ok) throw new Error('Not found');
+        const md = await res.text();
+        document.getElementById('markdown-body').innerHTML = marked.parse(md);
+        document.getElementById('home-view').style.display = 'none';
+        document.getElementById('article-view').style.display = 'block';
+        document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+        if (navEl) navEl.classList.add('active');
+      } catch (e) {
+        document.getElementById('markdown-body').innerHTML = '<p>記事の読み込みに失敗しました。</p>';
+        document.getElementById('home-view').style.display = 'none';
+        document.getElementById('article-view').style.display = 'block';
+      }
+    }
+
+    function showHome() {
+      document.getElementById('home-view').style.display = 'block';
+      document.getElementById('article-view').style.display = 'none';
+      document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+      document.getElementById('nav-home').classList.add('active');
+    }
+
+    renderArticleList();
+  </script>
+</body>
+</html>
